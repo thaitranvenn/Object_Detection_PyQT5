@@ -12,7 +12,15 @@ from models.experimental import attempt_load
 from utils.general import check_img_size, non_max_suppression, scale_coords
 from utils.datasets import letterbox
 from utils.plots import plot_one_box
+from os import environ
 
+def suppress_qt_warnings():
+    environ["QT_DEVICE_PIXEL_RATIO"] = "0"
+    environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+    environ["QT_SCREEN_SCALE_FACTORS"] = "1"
+    environ["QT_SCALE_FACTOR"] = "1"
+
+suppress_qt_warnings()
 class Ui_MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(Ui_MainWindow, self).__init__(parent)
@@ -184,7 +192,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         name_list = []
 
         img_name, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open Image", "", "*.jpg;;*.png;;All Files(*)")
+            self, "Open Image", "", "All Files(*);;*.jpg;;*.png")
         if not img_name:
             return
 
@@ -233,7 +241,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         if not self.timerVideo.isActive():
 
             videoName, _ = QtWidgets.QFileDialog.getOpenFileName(
-                self, "Open Video", "", "*.mp4;;*.avi;;All Files(*)")
+                self, "Open Video", "", "All Files(*);;*.mp4;;*.avi")
 
             if not videoName:
                 return
