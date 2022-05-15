@@ -163,9 +163,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Objects Detection using YOLOV5 and PyQT5"))
-        self.pushButton_Image.setText(_translate("MainWindow", "Open Image"))
-        self.pushButton_Camera.setText(_translate("MainWindow", "Open Camera"))
-        self.pushButton_Video.setText(_translate("MainWindow", "Open Video"))
+        self.pushButton_Image.setText(_translate("MainWindow", "Image Detection"))
+        self.pushButton_Camera.setText(_translate("MainWindow", "Camera Detection"))
+        self.pushButton_Video.setText(_translate("MainWindow", "Video Detection"))
         self.label.setText(_translate("MainWindow", "TextLabel"))
 
     def initSlots(self):
@@ -230,13 +230,14 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.label.setPixmap(QtGui.QPixmap.fromImage(self.QtImg))
 
     def buttonOpenVideo(self):
-        videoName, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open Video", "", "*.mp4;;*.avi;;All Files(*)")
-
-        if not videoName:
-            return
-
         if not self.timerVideo.isActive():
+
+            videoName, _ = QtWidgets.QFileDialog.getOpenFileName(
+                self, "Open Video", "", "*.mp4;;*.avi;;All Files(*)")
+
+            if not videoName:
+                return
+
             flag = self.cap.open(videoName)
             if flag == False:
                 QtWidgets.QMessageBox.warning(
@@ -280,7 +281,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.initLogo()
             self.pushButton_Video.setDisabled(False)
             self.pushButton_Image.setDisabled(False)
-            self.pushButton_Camera.setText(u"Camera detection")
+            self.pushButton_Camera.setText(u"Camera Detection")
 
     def showVideoFrame(self):
         name_list = []
