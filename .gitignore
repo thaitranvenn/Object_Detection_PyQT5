@@ -1,5 +1,4 @@
 # Repo-specific GitIgnore ----------------------------------------------------------------------------------------------
-*.jpg
 *.jpeg
 *.png
 *.bmp
@@ -20,6 +19,7 @@
 *.data
 *.json
 *.cfg
+*.jpg
 !setup.cfg
 !cfg/yolov3*.cfg
 
