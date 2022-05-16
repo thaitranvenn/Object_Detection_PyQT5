@@ -30,7 +30,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.initSlots()
         self.cap = cv2.VideoCapture()
         self.out = None
-        # self.out = cv2.VideoWriter('prediction.avi', cv2.VideoWriter_fourcc(*'XVID'), 20.0, (640, 480))
 
         parser = argparse.ArgumentParser()
         parser.add_argument('--weights', nargs='+', type=str,
@@ -183,9 +182,21 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.timerVideo.timeout.connect(self.showVideoFrame)
 
     def initLogo(self):
-        pix = QtGui.QPixmap('github.png')
+        picture = QtGui.QPixmap('github.png')
         self.label.setScaledContents(True)
-        self.label.setPixmap(pix)
+        self.label.setPixmap(picture)
+
+    def resetApplication(self):
+        self.timerVideo.stop()
+        self.cap.release()
+        self.out.release()
+        self.label.clear()
+        self.pushButton_Video.setDisabled(False)
+        self.pushButton_Video.setText("Video Detection")
+        self.pushButton_Image.setDisabled(False)
+        self.pushButton_Camera.setDisabled(False)
+        self.pushButton_Camera.setText("Camera Detection")
+        self.initLogo()
 
     def buttonOpenImage(self):
         print('Opening a image!\nPlease choose one!')
@@ -258,14 +269,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                 self.pushButton_Video.setText(u"Turn off the video")
                 self.pushButton_Camera.setDisabled(True)
         else:
-            self.timerVideo.stop()
-            self.cap.release()
-            self.out.release()
-            self.label.clear()
-            self.initLogo()
-            self.pushButton_Image.setDisabled(False)
-            self.pushButton_Video.setText(u"Video Detection")
-            self.pushButton_Camera.setDisabled(False)
+            self.resetApplication()
 
     def buttonOpenCamera(self):
         if not self.timerVideo.isActive():
@@ -282,14 +286,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                 self.pushButton_Video.setDisabled(True)
                 self.pushButton_Camera.setText(u"Turn off the camera")
         else:
-            self.timerVideo.stop()
-            self.cap.release()
-            self.out.release()
-            self.label.clear()
-            self.initLogo()
-            self.pushButton_Video.setDisabled(False)
-            self.pushButton_Image.setDisabled(False)
-            self.pushButton_Camera.setText(u"Camera Detection")
+            self.resetApplication()
+
 
     def showVideoFrame(self):
         name_list = []
@@ -336,14 +334,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             self.label.setPixmap(QtGui.QPixmap.fromImage(showImage))
 
         else:
-            self.timerVideo.stop()
-            self.cap.release()
-            self.out.release()
-            self.label.clear()
-            self.pushButton_Video.setDisabled(False)
-            self.pushButton_Image.setDisabled(False)
-            self.pushButton_Camera.setDisabled(False)
-            self.initLogo()
+            self.resetApplication()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

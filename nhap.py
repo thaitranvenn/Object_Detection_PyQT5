@@ -1,6 +1,3 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox
 import sys
 import cv2
 import numpy as np
@@ -8,8 +5,11 @@ import torch
 import argparse
 import random
 import torch.backends.cudnn as cudnn
-from PyQt5.uic import loadUi
 
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QMainWindow, QApplication, QMessageBox
+from PyQt5.uic import loadUi
 from models.experimental import attempt_load
 from utils.general import check_img_size, non_max_suppression, scale_coords
 from utils.datasets import letterbox
@@ -42,11 +42,8 @@ class LoadQt(QMainWindow):
         self.label.setPixmap(picture)
 
         parser = argparse.ArgumentParser()
-        parser.add_argument('--weights', nargs='+', type=str,
-                            default='weights/yolov5x.pt')
-        # file/folder, 0 for webcam
-        parser.add_argument('--source', type=str,
-                            default='data/images')
+        weights = 'weights/yolov5x.pt'
+        source = 'data/images'
         parser.add_argument('--img-size', type=int,
                             default=640, help='inference size (pixels)')
         parser.add_argument('--conf-thres', type=float,
@@ -80,7 +77,7 @@ class LoadQt(QMainWindow):
         self.opt = parser.parse_args()
         print(self.opt)
 
-        weights, imgsz = self.opt.weights, self.opt.img_size
+        imgsz = self.opt.img_size
         
         self.device = select_device(self.opt.device)
         self.half = self.device.type != 'cpu'  # half precision only supported on CUDA
@@ -95,9 +92,10 @@ class LoadQt(QMainWindow):
         if self.half:
             self.model.half()  # to FP16
 
-        # Get names and colors
+        # Get names for objects
         self.names = self.model.module.names if hasattr(
             self.model, 'module') else self.model.names
+        # Get colors for objects
         self.colors = [[random.randint(0, 255)
                         for _ in range(3)] for _ in self.names]
 
@@ -163,22 +161,18 @@ class LoadQt(QMainWindow):
     def aboutMessage(self):
         QMessageBox.about(self, "About Qt - Qt Designer",
             "Qt is a cross-platform framework written in C++ language, used to develop projects, software for desktop, or mobile."
-            "PyQt is a library that allows you to use Qt GUI, a very famous framework of C++. PyQt has many versions but the most recent and most supported is PyQt5.\n"
-        )
+            "PyQt is a library that allows you to use Qt GUI, a very famous framework of C++. PyQt has many versions but the most recent and most supported is PyQt5.\n")
     def aboutMessage2(self):
         QMessageBox.about(self, "About Author", "Executor: Tran Huu Thai\n\n"
                                                     "Contact me: \n"
                                                     "Number Phone - 89138032486\n"
-                                                    "Email - Thaitran130399.tusur@gmail.com"
-                          )
+                                                    "Email - Thaitran130399.tusur@gmail.com")
 
     def questionMessage(self):
         message = QMessageBox.question(self, "Exit", "Do you want to exit? Please sure that you saved all your data!", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if message == QMessageBox.Yes:
-            print("Yes")
+            print("Closing Application")
             self.close()
-        else:
-            print("No")
 
 application = QApplication(sys.argv)
 windows = LoadQt()
