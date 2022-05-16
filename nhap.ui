@@ -146,8 +146,32 @@
      <height>26</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuAbout_US">
+    <property name="title">
+     <string>About US</string>
+    </property>
+    <addaction name="actionAbout_QT"/>
+    <addaction name="actionAuthor"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="menuAbout_US"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionAbout_QT">
+   <property name="text">
+    <string>About QT</string>
+   </property>
+  </action>
+  <action name="actionAuthor">
+   <property name="text">
+    <string>Author</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
