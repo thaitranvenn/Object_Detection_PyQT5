@@ -100,9 +100,9 @@ class LoadQt(QMainWindow):
                         for _ in range(3)] for _ in self.names]
 
         # actions menu
-        self.actionExit.triggered.connect(self.questionMessage)
-        self.actionAbout_QT.triggered.connect(self.aboutMessage)
-        self.actionAuthor.triggered.connect(self.aboutMessage2)
+        self.actionExit.triggered.connect(self.questionExit)
+        self.actionAbout_QT.triggered.connect(self.aboutQt)
+        self.actionAuthor.triggered.connect(self.aboutAuthor)
 
         # buttons menu
         self.pushButton_Image.clicked.connect(self.buttonOpenImage)
@@ -158,17 +158,17 @@ class LoadQt(QMainWindow):
             self.result.data, self.result.shape[1], self.result.shape[0], QtGui.QImage.Format_RGB32)
         self.label.setPixmap(QtGui.QPixmap.fromImage(self.QtImg))
 
-    def aboutMessage(self):
+    def aboutQt(self):
         QMessageBox.about(self, "About Qt - Qt Designer",
             "Qt is a cross-platform framework written in C++ language, used to develop projects, software for desktop, or mobile."
             "PyQt is a library that allows you to use Qt GUI, a very famous framework of C++. PyQt has many versions but the most recent and most supported is PyQt5.\n")
-    def aboutMessage2(self):
+    def aboutAuthor(self):
         QMessageBox.about(self, "About Author", "Executor: Tran Huu Thai\n\n"
                                                     "Contact me: \n"
                                                     "Number Phone - 89138032486\n"
                                                     "Email - Thaitran130399.tusur@gmail.com")
 
-    def questionMessage(self):
+    def questionExit(self):
         message = QMessageBox.question(self, "Exit", "Do you want to exit? Please sure that you saved all your data!", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if message == QMessageBox.Yes:
             print("Closing Application")
