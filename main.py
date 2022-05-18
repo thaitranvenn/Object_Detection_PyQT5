@@ -1,7 +1,6 @@
 import sys
 from PyQt5.QtWidgets import *
 from utils.id import getId, saveId
-from datetime import datetime
 from lib.share import shareInfo
 from login_ui import LoginForm
 from register_ui import RegisterForm
@@ -31,11 +30,6 @@ class windowLogin(QMainWindow):
         shareInfo.createWin = windowRegister()
         shareInfo.createWin.show()
 
-    # 保存登录日志
-    def sava_login_log(self, username):
-        with open('login_log.txt', 'a', encoding='utf-8') as f:
-            f.write(username + '\t log in at' + datetime.now().strftimestrftime+ '\r')
-
     # This function is to login using login button or press enter
     def signIn(self):
         print("You pressed sign in")
@@ -48,11 +42,11 @@ class windowLogin(QMainWindow):
         #print(USER_PWD)
 
         if username not in USER_PWD.keys():
-            replay = QMessageBox.warning(self,"Failed to login!\n", "The login or password is incorrect", QMessageBox.Ok)
+            replay = QMessageBox.warning(self, "Failed to login!", "The login or password is incorrect!", QMessageBox.Ok)
         else:
             # Skip to main UI
             if USER_PWD.get(username) == password:
-                print("Jumpping to main window")
+                print("Skipping to main window")
                 shareInfo.mainWin = Ui_MainWindow()
                 shareInfo.mainWin.show()
                 self.close()

@@ -60,7 +60,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="edit_username"/>
+     <widget class="QLineEdit" name="editUsername"/>
     </item>
    </layout>
   </widget>
@@ -98,7 +98,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QLineEdit" name="edit_password"/>
+     <widget class="QLineEdit" name="editPassword"/>
     </item>
    </layout>
   </widget>
