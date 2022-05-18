@@ -1,6 +1,5 @@
 import sys
 import cv2
-import argparse
 import random
 import torch
 import numpy as np
@@ -12,6 +11,7 @@ from models.experimental import attempt_load
 from utils.general import check_img_size, non_max_suppression, scale_coords
 from utils.datasets import letterbox
 from utils.plots import plot_one_box
+from detect import parse_opt
 from os import environ
 
 def suppress_qt_warnings():
@@ -31,46 +31,10 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.cap = cv2.VideoCapture()
         self.out = None
 
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--weights', nargs='+', type=str,
-                            default='weights/yolov5n.pt', help='model.pt path(s)')
-        # file/folder, 0 for webcam
-        parser.add_argument('--source', type=str,
-                            default='data/images', help='source')
-        parser.add_argument('--img-size', type=int,
-                            default=640, help='inference size (pixels)')
-        parser.add_argument('--conf-thres', type=float,
-                            default=0.25, help='object confidence threshold')
-        parser.add_argument('--iou-thres', type=float,
-                            default=0.45, help='IOU threshold for NMS')
-        parser.add_argument('--device', default='',
-                            help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-        parser.add_argument(
-            '--view-img', action='store_true', help='display results')
-        parser.add_argument('--save-txt', action='store_true',
-                            help='save results to *.txt')
-        parser.add_argument('--save-conf', action='store_true',
-                            help='save confidences in --save-txt labels')
-        parser.add_argument('--nosave', action='store_true',
-                            help='do not save images/videos')
-        parser.add_argument('--classes', nargs='+', type=int,
-                            help='filter by class: --class 0, or --class 0 2 3')
-        parser.add_argument(
-            '--agnostic-nms', action='store_true', help='class-agnostic NMS')
-        parser.add_argument('--augment', action='store_true',
-                            help='augmented inference')
-        parser.add_argument('--update', action='store_true',
-                            help='update all models')
-        parser.add_argument('--project', default='runs/detect',
-                            help='save results to project/name')
-        parser.add_argument('--name', default='exp',
-                            help='save results to project/name')
-        parser.add_argument('--exist-ok', action='store_true',
-                            help='existing project/name ok, do not increment')
-        self.opt = parser.parse_args()
+        self.opt = parse_opt()
         print(self.opt)
 
-        source, weights, view_img, save_txt, imgsz = self.opt.source, self.opt.weights, self.opt.view_img, self.opt.save_txt, self.opt.img_size
+        source, weights, view_img, save_txt, imgsz = self.opt.source, self.opt.weights, self.opt.view_img, self.opt.save_txt, self.opt.imgsz
 
         self.device = select_device(self.opt.device)
         self.half = self.device.type != 'cpu'  # half precision only supported on CUDA
@@ -191,9 +155,9 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.cap.release()
         self.out.release()
         self.label.clear()
+        self.pushButton_Image.setDisabled(False)
         self.pushButton_Video.setDisabled(False)
         self.pushButton_Video.setText("Video Detection")
-        self.pushButton_Image.setDisabled(False)
         self.pushButton_Camera.setDisabled(False)
         self.pushButton_Camera.setText("Camera Detection")
         self.initLogo()
@@ -211,7 +175,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         print(img_name)
         showimg = img
         with torch.no_grad():
-            img = letterbox(img, new_shape=self.opt.img_size)[0]
+            img = letterbox(img, new_shape=self.opt.imgsz)[0]
             # Convert
             # BGR to RGB, to 3x416x416
             img = img[:, :, ::-1].transpose(2, 0, 1)
@@ -227,7 +191,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
             prediction = non_max_suppression(prediction, self.opt.conf_thres, self.opt.iou_thres, classes=self.opt.classes,
                                        agnostic=self.opt.agnostic_nms)
             print(prediction)
-            # Process detections
+            # Process detections per image
             for i, det in enumerate(prediction):
                 if det is not None and len(det):
                     # Rescale boxes from img_size to im0 size
@@ -296,7 +260,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         if image is not None:
             showImage = image
             with torch.no_grad():
-                image = letterbox(image, new_shape=self.opt.img_size)[0]
+                image = letterbox(image, new_shape=self.opt.imgsz)[0]
                 # Convert
                 # BGR to RGB, to 3x416x416
                 image = image[:, :, ::-1].transpose(2, 0, 1)
