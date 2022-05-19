@@ -30,12 +30,12 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(Ui_MainWindow, self).__init__(parent)
         self.timerVideo = QtCore.QTimer()
+
         # Load GUI from file .ui and set python icon
+        #loadUi('nhap.ui',self)
         loadUi('GUI.ui',self)
         self.setWindowIcon(QtGui.QIcon("python-icon.png"))
-        self.cap = cv2.VideoCapture()
-        self.out = None
-
+      
         # Set default picture for PyQt5
         self.initDefaultPicture()
 
@@ -75,28 +75,13 @@ class Ui_MainWindow(QMainWindow):
         self.actionAuthor.triggered.connect(self.aboutAuthor)
 
         # buttons menu
-        self.pushButton_Image.clicked.connect(self.buttonOpenImage)
-        self.pushButton_Video.clicked.connect(self.buttonOpenVideo)
-        self.pushButton_Camera.clicked.connect(self.buttonOpenCamera)
-        self.timerVideo.timeout.connect(self.showVideoFrame)
+        self.pushButton_Image.clicked.connect(self.objectsDetection)
 
     @pyqtSlot()
     def initDefaultPicture(self):
         picture = QtGui.QPixmap('github.png')
         self.label.setScaledContents(True)
         self.label.setPixmap(picture)
-
-    def resetApplication(self):
-        self.timerVideo.stop()
-        self.cap.release()
-        self.out.release()
-        self.label.clear()
-        self.pushButton_Image.setDisabled(False)
-        self.pushButton_Video.setDisabled(False)
-        self.pushButton_Video.setText("Open Video")
-        self.pushButton_Camera.setDisabled(False)
-        self.pushButton_Camera.setText("Open Camera")
-        self.initDefaultPicture()
 
     # This function is called for opening the image and 
     def buttonOpenImage(self):
@@ -107,8 +92,10 @@ class Ui_MainWindow(QMainWindow):
             self, "Open Image", "", "All Files(*);;*.jpg;;*.png")
         if not imageName:
             return
+        return imageName
 
-        image = cv2.imread(imageName)
+    def objectsDetection(self):
+        image = cv2.imread(self.buttonOpenImage())
         showImage = image
         with torch.no_grad():
             image = letterbox(image, new_shape=self.opt.imgsz)[0]
@@ -142,9 +129,10 @@ class Ui_MainWindow(QMainWindow):
                     print("Name and exact scale of detected object:" )
                     for *xyxy, conf, cls in reversed(det):
                         label = '%s %.2f' % (self.names[int(cls)], conf)
+                        name_list = []
+
+                        name_list.append(self.names[int(cls)])
                         print("  ", label)
-                        with open('result_Object.txt', 'w') as f:
-                            f.write(label + '\n')
                         plot_one_box(xyxy, showImage, label=label,
                                      color=self.colors[int(cls)], line_thickness=2)        
 
@@ -156,95 +144,7 @@ class Ui_MainWindow(QMainWindow):
         self.QtImg = QtGui.QImage(
             self.result.data, self.result.shape[1], self.result.shape[0], QtGui.QImage.Format_RGB32)
         self.label.setPixmap(QtGui.QPixmap.fromImage(self.QtImg))
-        # self.textBrowser.setText(name_list)
-
-    def buttonOpenVideo(self):
-        if not self.timerVideo.isActive():
-
-            videoName, _ = QtWidgets.QFileDialog.getOpenFileName(
-                self, "Open Video", "", "All Files(*);;*.mp4;;*.avi")
-
-            if not videoName:
-                return
-
-            flag = self.cap.open(videoName)
-            if flag == False:
-                QtWidgets.QMessageBox.warning(
-                    self, u"Warning", u"Failed to open video", buttons=QtWidgets.QMessageBox.Ok, defaultButton=QtWidgets.QMessageBox.Ok)
-            else:
-                self.out = cv2.VideoWriter('result_Video.avi', cv2.VideoWriter_fourcc(
-                    *'MJPG'), 20, (int(self.cap.get(3)), int(self.cap.get(4))))
-                self.timerVideo.start(30)
-                self.pushButton_Image.setDisabled(True)
-                self.pushButton_Video.setText(u"Turn off the video")
-                self.pushButton_Camera.setDisabled(True)
-        else:
-            self.resetApplication()
-
-    def buttonOpenCamera(self):
-        if not self.timerVideo.isActive():
-            # Use local camera by default
-            flag = self.cap.open(0)
-            if flag == False:
-                QtWidgets.QMessageBox.warning(
-                    self, u"Warning", u"Failed to open camera", buttons=QtWidgets.QMessageBox.Ok, defaultButton=QtWidgets.QMessageBox.Ok)
-            else:
-                self.out = cv2.VideoWriter('result_Camera.avi', cv2.VideoWriter_fourcc(
-                    *'MJPG'), 20, (int(self.cap.get(3)), int(self.cap.get(4))))
-                self.timerVideo.start(30)
-                self.pushButton_Image.setDisabled(True)
-                self.pushButton_Video.setDisabled(True)
-                self.pushButton_Camera.setText(u"Turn off the camera")
-        else:
-            self.resetApplication()
-
-    def showVideoFrame(self):
-        flag, image = self.cap.read()
-        if image is not None:
-            showImage = image
-            with torch.no_grad():
-                image = letterbox(image, new_shape=self.opt.imgsz)[0]
-                # Convert
-                # BGR to RGB, to 3x416x416
-                image = image[:, :, ::-1].transpose(2, 0, 1)
-                # Return a contiguous array (ndim >= 1) in memory
-                image = np.ascontiguousarray(image)
-                image = torch.from_numpy(image).to(self.device)
-                image = image.half() if self.half else image.float()  # uint8 to fp16/32
-                
-                # Tranfer 0 - 255 to 0.0 - 1.0
-                image /= 255.0
-                if image.ndimension() == 3:
-                    image = image.unsqueeze(0)
-                # Inference
-                prediction = self.model(image, augment=self.opt.augment)[0]
-
-                # Apply Non max suppression to optimize the bounding box 
-                prediction = non_max_suppression(prediction, self.opt.conf_thres, self.opt.iou_thres, classes=self.opt.classes,
-                                           agnostic=self.opt.agnostic_nms)
-                # Process objects detection in image
-                for i, det in enumerate(prediction):  # detections per image
-                    if det is not None and len(det):
-                        # Rescale boxes from img_size to im0 size
-                        det[:, :4] = scale_coords(
-                            image.shape[2:], det[:, :4], showImage.shape).round()
-                        # Write results
-                        for *xyxy, conf, cls in reversed(det):
-                            label = '%s %.2f' % (self.names[int(cls)], conf)
-                            print(label)
-                            self.textBrowser.setText(label)
-                            plot_one_box(
-                                xyxy, showImage, label=label, color=self.colors[int(cls)], line_thickness=2)
-
-            self.out.write(showImage)
-            show = cv2.resize(showImage, (640, 480))
-            self.result = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
-            showImage = QtGui.QImage(self.result.data, self.result.shape[1], self.result.shape[0],
-                                     QtGui.QImage.Format_RGB888)
-            self.label.setPixmap(QtGui.QPixmap.fromImage(showImage))
-
-        else:
-            self.resetApplication()
+        self.textBrowser.setText(label)
 
     # This function to describe QT
     def aboutQt(self):

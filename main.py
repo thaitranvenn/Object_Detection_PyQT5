@@ -5,6 +5,7 @@ from lib.share import shareInfo
 from loginUI import loginForm
 from registerUI import registerForm
 from GUI import Ui_MainWindow
+from cryptography.fernet import Fernet
 
 # Class này là giao diện login
 class windowLogin(QMainWindow):
@@ -34,6 +35,7 @@ class windowLogin(QMainWindow):
 
         # Get information login and password for Login UI
         USER_PWD = getId()
+        print (USER_PWD)
         # Check username is correct
         if username not in USER_PWD.keys():
             replay = QMessageBox.warning(self, "Failed to login!", "Invalid username!", QMessageBox.Ok)
