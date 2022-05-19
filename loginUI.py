@@ -1,6 +1,4 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-
-
 class loginForm(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")

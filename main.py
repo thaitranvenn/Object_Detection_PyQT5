@@ -15,10 +15,6 @@ class windowLogin(QMainWindow):
         self.initSlots()
         self.hidenPassword()
 
-    # The password edit box is hidden
-    def hidenPassword(self):
-        self.loginUI.editPassword.setEchoMode(QLineEdit.Password)
-
     def initSlots(self):
         # Using login button and enter key
         self.loginUI.buttonLogin.clicked.connect(self.signIn)
@@ -32,24 +28,29 @@ class windowLogin(QMainWindow):
 
     # This function is to login using login button or press enter
     def signIn(self):
-        print("You pressed sign in")
-        # Lấy tài khoản mật khẩu từ giao diện đăng nhập
+        # Get username and password from login GUI
         username = self.loginUI.editUsername.text().strip()
         password = self.loginUI.editPassword.text().strip()
 
         # Get information login and password for Login UI
         USER_PWD = getId()
-        #print(USER_PWD)
-
+        # Check username is correct
         if username not in USER_PWD.keys():
-            replay = QMessageBox.warning(self, "Failed to login!", "The login or password is incorrect!", QMessageBox.Ok)
+            replay = QMessageBox.warning(self, "Failed to login!", "Invalid username!", QMessageBox.Ok)
         else:
-            # Skip to main UI
+            # Check password is correct and skip to GUI
             if USER_PWD.get(username) == password:
                 print("Skipping to main window")
                 shareInfo.mainWin = Ui_MainWindow()
                 shareInfo.mainWin.show()
                 self.close()
+            # Return if the password is wrong
+            else:
+                replay = QMessageBox.warning(self, "Failed to login!", "The password is incorrect!", QMessageBox.Ok)
+
+    # The password edit box is hidden
+    def hidenPassword(self):
+        self.loginUI.editPassword.setEchoMode(QLineEdit.Password)
 
 # Register GUI
 class windowRegister(QDialog):
@@ -66,35 +67,32 @@ class windowRegister(QDialog):
 
     # Create new account
     def newAccount(self):
-        print("Create new account")
-        USER_PWD = getId()
-        #print(USER_PWD)
+        # Get username and password from login GUI
         newUsername = self.registerUI.editUsername.text().strip()
         newPassword = self.registerUI.editPassword.text().strip()
         # Check username is empty
-        if newUsername == "":
-            replay = QMessageBox.warning(self, "Abort", "Username is empty!", QMessageBox.Ok)
+        if newUsername == "" or newPassword == "":
+            replay = QMessageBox.warning(self, "Abort", "Invalid username or password!", QMessageBox.Ok)
+        elif newUsername.isascii == False or newPassword.isascii == False:
+            replay = QMessageBox.warning(self, "Abort", "Please sure that the syntax is in latin", QMessageBox.Ok)
         else:
             # Check username is exist
+            # Get information login and password for Login UI
+            USER_PWD = getId()
             if newUsername in USER_PWD.keys():
                 replay = QMessageBox.warning(self, "Abort", "Username is exist!", QMessageBox.Ok)
             else:
-                # Check password is empty
-                if newPassword == "":
-                    replay = QMessageBox.warning(self, "Abort", "Password is empty!", QMessageBox.Ok)
-                else:
-                    # Successful created account
-                    print("Successful!")
-                    saveId(newUsername, newPassword)
-                    replay = QMessageBox.warning(self, "Abort", "Successful!", QMessageBox.Ok)
-                    self.close()
+                # Successful created account
+                saveId(newUsername, newPassword)
+                replay = QMessageBox.warning(self, "Abort", "Successful!", QMessageBox.Ok)
+                self.close()
 
     def cancel(self):
         self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    # Chọn giao diện đăng nhập làm giao diện chính
+    # Choose Log In GUI is main GUI
     shareInfo.loginWin = windowLogin()
     shareInfo.loginWin.show()
     sys.exit(app.exec_())

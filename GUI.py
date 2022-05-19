@@ -102,6 +102,7 @@ class Ui_MainWindow(QMainWindow):
             # Convert
             # BGR to RGB, to 3x416x416
             image = image[:, :, ::-1].transpose(2, 0, 1)
+            # Return a contiguous array (ndim >= 1) in memory
             image = np.ascontiguousarray(image)
             image = torch.from_numpy(image).to(self.device)
             image = image.half() if self.half else image.float()  # uint8 to fp16/32
@@ -153,7 +154,7 @@ class Ui_MainWindow(QMainWindow):
     
     # Describe author
     def aboutAuthor(self):
-        QMessageBox.about(self, "About Author", "Executor: Tran Huu Thai\n\n"
+        QMessageBox.about(self, "About Author", "Instructor: Коцубинский В. П.\nExecutor: Tran Huu Thai\n\n"
                                                     "Contact me: \n"
                                                     "Number Phone - 89138032486\n"
                                                     "Email - Thaitran130399.tusur@gmail.com")
