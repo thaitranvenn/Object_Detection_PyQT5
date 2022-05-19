@@ -2,15 +2,15 @@ import sys
 from PyQt5.QtWidgets import *
 from utils.id import getId, saveId
 from lib.share import shareInfo
-from login_ui import LoginForm
-from register_ui import RegisterForm
+from loginUI import loginForm
+from registerUI import registerForm
 from GUI import Ui_MainWindow
 
 # Class này là giao diện login
 class windowLogin(QMainWindow):
     def __init__(self, parent = None):
         super(windowLogin, self).__init__(parent)
-        self.loginUI = LoginForm()
+        self.loginUI = loginForm()
         self.loginUI.setupUi(self)
         self.initSlots()
         self.hidenPassword()
@@ -55,7 +55,7 @@ class windowLogin(QMainWindow):
 class windowRegister(QDialog):
     def __init__(self, parent = None):
         super(windowRegister, self).__init__(parent)
-        self.registerUI = RegisterForm()
+        self.registerUI = registerForm()
         self.registerUI.setupUi(self)
         self.initSlots()
 
