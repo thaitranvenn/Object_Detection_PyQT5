@@ -1,1 +1,7 @@
+person 0.28
+person 0.64
+person 0.80
+person 0.82
+person 0.86
 sports ball 0.88
+

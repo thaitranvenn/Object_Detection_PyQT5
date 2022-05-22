@@ -1,5 +1,7 @@
+import re
 import sys
 from PyQt5.QtWidgets import *
+from regex import B
 from utils.id import getId, saveId
 from lib.share import shareInfo
 from loginUI import loginForm
@@ -35,14 +37,14 @@ class windowLogin(QMainWindow):
 
         # Get information login and password for Login UI
         USER_PWD = getId()
-        print (USER_PWD)
+        #print (USER_PWD)
         # Check username is correct
         if username not in USER_PWD.keys():
             replay = QMessageBox.warning(self, "Failed to login!", "Invalid username!", QMessageBox.Ok)
         else:
             # Check password is correct and skip to GUI
             if USER_PWD.get(username) == password:
-                print("Skipping to main window")
+                print("\nSkipping to main window\n\n")
                 shareInfo.mainWin = Ui_MainWindow()
                 shareInfo.mainWin.show()
                 self.close()
@@ -72,10 +74,13 @@ class windowRegister(QDialog):
         # Get username and password from login GUI
         newUsername = self.registerUI.editUsername.text().strip()
         newPassword = self.registerUI.editPassword.text().strip()
+        # make a pattern
+        pattern = "^[A-Za-z0-9_-]*$"
+
         # Check username is empty
         if newUsername == "" or newPassword == "":
             replay = QMessageBox.warning(self, "Abort", "Invalid username or password!", QMessageBox.Ok)
-        elif newUsername.isascii == False or newPassword.isascii == False:
+        elif bool(re.match(pattern, newUsername)) != True or bool(re.match(pattern, newPassword)) != True:
             replay = QMessageBox.warning(self, "Abort", "Please sure that the syntax is in latin", QMessageBox.Ok)
         else:
             # Check username is exist

@@ -101,13 +101,14 @@ class Ui_MainWindow(QMainWindow):
     # This function is called for opening the image and 
     def buttonOpenImage(self):
         print('\nOpening a image!\nPlease choose one!\n')
-
+        listOfName = []
         # Open the folder for choosing the image
         imageName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open Image", "", "All Files(*);;*.jpg;;*.png")
         if not imageName:
             return
 
+        
         image = cv2.imread(imageName)
         showImage = image
         with torch.no_grad():
@@ -131,6 +132,8 @@ class Ui_MainWindow(QMainWindow):
                                        agnostic=self.opt.agnostic_nms)
             print(prediction, '\n')
 
+            labelsShow  = ""
+
             # Process objects detection in image
             for i, det in enumerate(prediction):
                 if det is not None and len(det):
@@ -142,21 +145,23 @@ class Ui_MainWindow(QMainWindow):
                     print("Name and exact scale of detected object:" )
                     for *xyxy, conf, cls in reversed(det):
                         label = '%s %.2f' % (self.names[int(cls)], conf)
-                        print("  ", label)
-                        with open('result_Object.txt', 'w') as f:
-                            f.write(label + '\n')
-                        plot_one_box(xyxy, showImage, label=label,
-                                     color=self.colors[int(cls)], line_thickness=2)        
+                        print("[INFO] :  ", label)
+                        listOfName.append(self.names[int(cls)])
 
-        # Received results
+                        # Get single information of the object
+                        infoSingle = plot_one_box(xyxy, showImage, label=label,
+                                     color=self.colors[int(cls)], line_thickness=2)
+                        labelsShow = labelsShow + infoSingle + "\n"
+                        with open('result_Object.txt', 'w') as f:
+                            f.write(labelsShow + '\n')        # Received results
         cv2.imwrite('result_Image.jpg', showImage)
+        self.textBrowser.setText(labelsShow)
         self.result = cv2.cvtColor(showImage, cv2.COLOR_BGR2BGRA)
         self.result = cv2.resize(
             self.result, (640, 480), interpolation=cv2.INTER_AREA)
         self.QtImg = QtGui.QImage(
             self.result.data, self.result.shape[1], self.result.shape[0], QtGui.QImage.Format_RGB32)
         self.label.setPixmap(QtGui.QPixmap.fromImage(self.QtImg))
-        # self.textBrowser.setText(name_list)
 
     def buttonOpenVideo(self):
         if not self.timerVideo.isActive():
@@ -225,13 +230,13 @@ class Ui_MainWindow(QMainWindow):
                 # Process objects detection in image
                 for i, det in enumerate(prediction):  # detections per image
                     if det is not None and len(det):
-                        # Rescale boxes from img_size to im0 size
+                        # This is for rescale boxes from img_size to im0 size
                         det[:, :4] = scale_coords(
                             image.shape[2:], det[:, :4], showImage.shape).round()
-                        # Write results
+                        # Write results of objects to command line and file .txt
                         for *xyxy, conf, cls in reversed(det):
                             label = '%s %.2f' % (self.names[int(cls)], conf)
-                            print(label)
+                            print("[INFO] :  ", label)
                             self.textBrowser.setText(label)
                             plot_one_box(
                                 xyxy, showImage, label=label, color=self.colors[int(cls)], line_thickness=2)
@@ -273,4 +278,4 @@ if __name__ == '__main__':
     try:
         sys.exit(application.exec())
     except:
-        print("Exitting...")
+        print("\nExitting...")
