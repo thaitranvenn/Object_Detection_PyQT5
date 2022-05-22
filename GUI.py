@@ -153,7 +153,9 @@ class Ui_MainWindow(QMainWindow):
                                      color=self.colors[int(cls)], line_thickness=2)
                         labelsShow = labelsShow + infoSingle + "\n"
                         with open('result_Object.txt', 'w') as f:
-                            f.write(labelsShow + '\n')        # Received results
+                            f.write(labelsShow + '\n')        
+        
+        # Received results
         cv2.imwrite('result_Image.jpg', showImage)
         self.textBrowser.setText(labelsShow)
         self.result = cv2.cvtColor(showImage, cv2.COLOR_BGR2BGRA)
@@ -205,6 +207,7 @@ class Ui_MainWindow(QMainWindow):
 
     def showVideoFrame(self):
         flag, image = self.cap.read()
+        listOfName = []
         if image is not None:
             showImage = image
             with torch.no_grad():
@@ -227,6 +230,7 @@ class Ui_MainWindow(QMainWindow):
                 # Apply Non max suppression to optimize the bounding box 
                 prediction = non_max_suppression(prediction, self.opt.conf_thres, self.opt.iou_thres, classes=self.opt.classes,
                                            agnostic=self.opt.agnostic_nms)
+                labelsShow = ""
                 # Process objects detection in image
                 for i, det in enumerate(prediction):  # detections per image
                     if det is not None and len(det):
@@ -237,10 +241,16 @@ class Ui_MainWindow(QMainWindow):
                         for *xyxy, conf, cls in reversed(det):
                             label = '%s %.2f' % (self.names[int(cls)], conf)
                             print("[INFO] :  ", label)
-                            self.textBrowser.setText(label)
-                            plot_one_box(
+                            listOfName.append(self.names[int(cls)])
+                            # Get single information of the object
+                            infoSingle = plot_one_box(
                                 xyxy, showImage, label=label, color=self.colors[int(cls)], line_thickness=2)
-
+                            labelsShow = labelsShow + infoSingle + "\n"
+                            with open('result_Object.txt', 'w') as f:
+                                f.write(labelsShow + '\n')                
+            
+            # Received results
+            self.textBrowser.setText(labelsShow)
             self.out.write(showImage)
             show = cv2.resize(showImage, (640, 480))
             self.result = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
