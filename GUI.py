@@ -107,7 +107,6 @@ class Ui_MainWindow(QMainWindow):
             self, "Open Image", "", "All Files(*);;*.jpg;;*.png")
         if not imageName:
             return
-
         
         image = cv2.imread(imageName)
         showImage = image
@@ -132,7 +131,7 @@ class Ui_MainWindow(QMainWindow):
                                        agnostic=self.opt.agnostic_nms)
             print(prediction, '\n')
 
-            labelsShow  = ""
+            inforObjects  = ""
 
             # Process objects detection in image
             for i, det in enumerate(prediction):
@@ -149,15 +148,15 @@ class Ui_MainWindow(QMainWindow):
                         listOfName.append(self.names[int(cls)])
 
                         # Get single information of the object
-                        infoSingle = plot_one_box(xyxy, showImage, label=label,
+                        inforObject = plot_one_box(xyxy, showImage, label=label,
                                      color=self.colors[int(cls)], line_thickness=2)
-                        labelsShow = labelsShow + infoSingle + "\n"
+                        inforObjects = inforObjects + inforObject + "\n"
                         with open('result_Object.txt', 'w') as f:
-                            f.write(labelsShow + '\n')        
+                            f.write(inforObjects + '\n')        
         
         # Received results
         cv2.imwrite('result_Image.jpg', showImage)
-        self.textBrowser.setText(labelsShow)
+        self.textBrowser.setText(inforObjects)
         self.result = cv2.cvtColor(showImage, cv2.COLOR_BGR2BGRA)
         self.result = cv2.resize(
             self.result, (640, 480), interpolation=cv2.INTER_AREA)
@@ -230,7 +229,7 @@ class Ui_MainWindow(QMainWindow):
                 # Apply Non max suppression to optimize the bounding box 
                 prediction = non_max_suppression(prediction, self.opt.conf_thres, self.opt.iou_thres, classes=self.opt.classes,
                                            agnostic=self.opt.agnostic_nms)
-                labelsShow = ""
+                inforObjects = ""
                 # Process objects detection in image
                 for i, det in enumerate(prediction):  # detections per image
                     if det is not None and len(det):
@@ -243,21 +242,20 @@ class Ui_MainWindow(QMainWindow):
                             print("[INFO] :  ", label)
                             listOfName.append(self.names[int(cls)])
                             # Get single information of the object
-                            infoSingle = plot_one_box(
+                            inforObject = plot_one_box(
                                 xyxy, showImage, label=label, color=self.colors[int(cls)], line_thickness=2)
-                            labelsShow = labelsShow + infoSingle + "\n"
+                            inforObjects = inforObjects + inforObject + "\n"
                             with open('result_Object.txt', 'w') as f:
-                                f.write(labelsShow + '\n')                
+                                f.write(inforObjects + '\n')                
             
             # Received results
-            self.textBrowser.setText(labelsShow)
+            self.textBrowser.setText(inforObjects)
             self.out.write(showImage)
             show = cv2.resize(showImage, (640, 480))
             self.result = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
             showImage = QtGui.QImage(self.result.data, self.result.shape[1], self.result.shape[0],
                                      QtGui.QImage.Format_RGB888)
             self.label.setPixmap(QtGui.QPixmap.fromImage(showImage))
-
         else:
             self.resetApplication()
 

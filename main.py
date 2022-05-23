@@ -1,14 +1,17 @@
 import re
 import sys
 from PyQt5.QtWidgets import *
-from regex import B
 from utils.id import getId, saveId
-from lib.share import shareInfo
 from loginUI import loginForm
 from registerUI import registerForm
 from GUI import Ui_MainWindow
-from cryptography.fernet import Fernet
 
+# Public password account
+class skipWindow:
+    windowMain = None
+    windowLogin = None
+    windowRegister = None
+    
 # Class này là giao diện login
 class windowLogin(QMainWindow):
     def __init__(self, parent = None):
@@ -26,8 +29,8 @@ class windowLogin(QMainWindow):
 
     # Skip to register UI
     def createID(self):
-        shareInfo.createWin = windowRegister()
-        shareInfo.createWin.show()
+        skipWindow.windowRegister = windowRegister()
+        skipWindow.windowRegister.show()
 
     # This function is to login using login button or press enter
     def signIn(self):
@@ -45,8 +48,8 @@ class windowLogin(QMainWindow):
             # Check password is correct and skip to GUI
             if USER_PWD.get(username) == password:
                 print("\nSkipping to main window\n\n")
-                shareInfo.mainWin = Ui_MainWindow()
-                shareInfo.mainWin.show()
+                skipWindow.windowMain = Ui_MainWindow()
+                skipWindow.windowMain.show()
                 self.close()
             # Return if the password is wrong
             else:
@@ -100,6 +103,6 @@ class windowRegister(QDialog):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # Choose Log In GUI is main GUI
-    shareInfo.loginWin = windowLogin()
-    shareInfo.loginWin.show()
+    skipWindow.windowLogin = windowLogin()
+    skipWindow.windowLogin.show()
     sys.exit(app.exec_())
