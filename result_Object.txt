@@ -6,4 +6,3 @@ sports ball 0.89
 person 0.92
 person 0.93
 person 0.94
-

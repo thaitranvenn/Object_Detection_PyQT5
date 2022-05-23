@@ -38,9 +38,8 @@ class windowLogin(QMainWindow):
         username = self.loginUI.editUsername.text().strip()
         password = self.loginUI.editPassword.text().strip()
 
-        # Get information login and password for Login UI
+        # Get information login and password for Login UI 
         USER_PWD = getId()
-        #print (USER_PWD)
         # Check username is correct
         if username not in USER_PWD.keys():
             replay = QMessageBox.warning(self, "Failed to login!", "Invalid username!", QMessageBox.Ok)
