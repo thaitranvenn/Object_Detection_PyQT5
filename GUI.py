@@ -57,7 +57,8 @@ class Ui_MainWindow(QMainWindow):
         self.model = attempt_load(
             weights, map_location=self.device)  # load FP32 model
         stride = int(self.model.stride.max())  # model stride
-        self.imgsz = check_img_size(imgsz, s=stride)  # check img_size
+        # check image size
+        self.imgsz = check_img_size(imgsz, s=stride)
         if self.half:
             self.model.half()  # to FP16
 

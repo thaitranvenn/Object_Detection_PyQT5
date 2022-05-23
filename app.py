@@ -252,7 +252,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         else:
             self.resetApplication()
 
-
     def showVideoFrame(self):
         name_list = []
 
