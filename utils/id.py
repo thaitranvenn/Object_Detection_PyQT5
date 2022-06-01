@@ -29,5 +29,4 @@ def getId():
             USER_PWD[row[0]] = row[1]
     return USER_PWD
 
-import os
 # os.remove('tempInfo.csv')

@@ -19,7 +19,7 @@ class windowLogin(QMainWindow):
         self.loginUI = loginForm()
         self.loginUI.setupUi(self)
         self.initSlots()
-        self.hidenPassword()
+        # self.hidenPassword()
 
     def initSlots(self):
         # Using login button and enter key
@@ -54,7 +54,7 @@ class windowLogin(QMainWindow):
             else:
                 replay = QMessageBox.warning(self, "Failed to login!", "The password is incorrect!", QMessageBox.Ok)
 
-    # The password edit box is hidden
+    # The password edit box is hidden, use when .UI did not set up hiden mode
     def hidenPassword(self):
         self.loginUI.editPassword.setEchoMode(QLineEdit.Password)
 
@@ -66,7 +66,7 @@ class windowRegister(QDialog):
         self.registerUI.setupUi(self)
         self.initSlots()
 
-    # Click to register or cancel the register
+    # Click to register new account or cancel
     def initSlots(self):
         self.registerUI.pushButtonRegister.clicked.connect(self.newAccount)
         self.registerUI.pushButtonCancel.clicked.connect(self.cancel)

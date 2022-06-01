@@ -33,8 +33,8 @@ class Ui_MainWindow(QMainWindow):
         # Load GUI from file .ui and set python icon
         loadUi('GUI.ui',self)
         self.setWindowIcon(QtGui.QIcon("python-icon.png"))
-        self.cap = cv2.VideoCapture()
-        self.out = None
+        self.capture = cv2.VideoCapture()
+        self.output = None
 
         # Set default picture for PyQt5
         self.initDefaultPicture()
@@ -47,6 +47,7 @@ class Ui_MainWindow(QMainWindow):
         
         # Device selection, determines the speed of the process
         self.device = select_device(self.opt.device)
+
         # half precision only supported on CUDA
         self.half = self.device.type != 'cpu'
         
@@ -55,7 +56,8 @@ class Ui_MainWindow(QMainWindow):
 
         # Load model
         self.model = attempt_load(
-            weights, map_location=self.device)  # load FP32 model
+            # load FP32 model
+            weights, map_location=self.device)
         stride = int(self.model.stride.max())  # model stride
         # check image size
         self.imgsz = check_img_size(imgsz, s=stride)
@@ -83,14 +85,15 @@ class Ui_MainWindow(QMainWindow):
 
     @pyqtSlot()
     def initDefaultPicture(self):
-        picture = QtGui.QPixmap('github.png')
+        picture = QtGui.QPixmap('yolo.png')
         self.label.setScaledContents(True)
         self.label.setPixmap(picture)
 
+    # This function is called for stopping the timer, reset all buttons, label and Default Picture
     def resetApplication(self):
         self.timerVideo.stop()
-        self.cap.release()
-        self.out.release()
+        self.capture.release()
+        self.output.release()
         self.label.clear()
         self.pushButton_Image.setDisabled(False)
         self.pushButton_Video.setDisabled(False)
@@ -99,9 +102,9 @@ class Ui_MainWindow(QMainWindow):
         self.pushButton_Camera.setText("Open Camera")
         self.initDefaultPicture()
 
-    # This function is called for opening the image and 
+    # This function is called for opening the image and processing the image
     def buttonOpenImage(self):
-        print('\nOpening a image!\nPlease choose one!\n')
+        print('\nOpening a image...\nPlease choose one!\n')
         listOfName = []
         # Open the folder for choosing the image
         imageName, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -128,10 +131,8 @@ class Ui_MainWindow(QMainWindow):
             # Inference
             prediction = self.model(image, augment=self.opt.augment)[0]
             # Apply Non max suppression to optimize the bounding box 
-            prediction = non_max_suppression(prediction, self.opt.conf_thres, self.opt.iou_thres, classes=self.opt.classes,
-                                       agnostic=self.opt.agnostic_nms)
-            print(prediction, '\n')
-
+            prediction = non_max_suppression(prediction, self.opt.conf_thres, self.opt.iou_thres, 
+                                            classes=self.opt.classes, agnostic=self.opt.agnostic_nms)
             inforObjects  = ""
 
             # Process objects detection in image
@@ -161,52 +162,57 @@ class Ui_MainWindow(QMainWindow):
         self.result = cv2.cvtColor(showImage, cv2.COLOR_BGR2BGRA)
         self.result = cv2.resize(
             self.result, (640, 480), interpolation=cv2.INTER_AREA)
-        self.QtImg = QtGui.QImage(
+        self.showImage = QtGui.QImage(
             self.result.data, self.result.shape[1], self.result.shape[0], QtGui.QImage.Format_RGB32)
-        self.label.setPixmap(QtGui.QPixmap.fromImage(self.QtImg))
+        self.label.setPixmap(QtGui.QPixmap.fromImage(self.showImage))
 
+    # This function is called for opening the video
     def buttonOpenVideo(self):
         if not self.timerVideo.isActive():
-
+            # Open the folder for choosing the video
             videoName, _ = QtWidgets.QFileDialog.getOpenFileName(
                 self, "Open Video", "", "All Files(*);;*.mp4;;*.avi")
 
             if not videoName:
                 return
 
-            flag = self.cap.open(videoName)
+            flag = self.capture.open(videoName)
             if flag == False:
                 QtWidgets.QMessageBox.warning(
-                    self, u"Warning", u"Failed to open video", buttons=QtWidgets.QMessageBox.Ok, defaultButton=QtWidgets.QMessageBox.Ok)
+                    self, u"Warning", u"Failed to open video", defaultButton=QtWidgets.QMessageBox.Ok)
             else:
-                self.out = cv2.VideoWriter('result_Video.avi', cv2.VideoWriter_fourcc(
-                    *'MJPG'), 20, (int(self.cap.get(3)), int(self.cap.get(4))))
-                self.timerVideo.start(30)
+                self.output = cv2.VideoWriter('result_Video.avi', cv2.VideoWriter_fourcc(
+                    *'MJPG'), 20, (int(self.capture.get(3)), int(self.capture.get(4))))
+                # Set timerVideo to Start and Speed processing, milisecond
+                self.timerVideo.start(20)
                 self.pushButton_Image.setDisabled(True)
                 self.pushButton_Video.setText(u"Turn off the video")
                 self.pushButton_Camera.setDisabled(True)
         else:
             self.resetApplication()
 
+    # This function is called for opening the camera
     def buttonOpenCamera(self):
         if not self.timerVideo.isActive():
-            # Use local camera by default
-            flag = self.cap.open(0)
+            # Use local camera by default, 0 is first camera, 1 is second camera...
+            flag = self.capture.open(0)
             if flag == False:
                 QtWidgets.QMessageBox.warning(
-                    self, u"Warning", u"Failed to open camera", buttons=QtWidgets.QMessageBox.Ok, defaultButton=QtWidgets.QMessageBox.Ok)
+                    self, u"Warning", u"Failed to open camera", defaultButton=QtWidgets.QMessageBox.Ok)
             else:
-                self.out = cv2.VideoWriter('result_Camera.avi', cv2.VideoWriter_fourcc(
-                    *'MJPG'), 20, (int(self.cap.get(3)), int(self.cap.get(4))))
-                self.timerVideo.start(30)
+                self.output = cv2.VideoWriter('result_Camera.avi', cv2.VideoWriter_fourcc(
+                    *'MJPG'), 20, (int(self.capture.get(3)), int(self.capture.get(4))))
+                # Set timerVideo to Start and Speed processing, milisecond
+                self.timerVideo.start(20)
                 self.pushButton_Image.setDisabled(True)
                 self.pushButton_Video.setDisabled(True)
                 self.pushButton_Camera.setText(u"Turn off the camera")
         else:
             self.resetApplication()
 
+    # This function is called for showing video frames, using for video and camera.
     def showVideoFrame(self):
-        flag, image = self.cap.read()
+        flag, image = self.capture.read()
         listOfName = []
         if image is not None:
             showImage = image
@@ -228,30 +234,34 @@ class Ui_MainWindow(QMainWindow):
                 prediction = self.model(image, augment=self.opt.augment)[0]
 
                 # Apply Non max suppression to optimize the bounding box 
-                prediction = non_max_suppression(prediction, self.opt.conf_thres, self.opt.iou_thres, classes=self.opt.classes,
-                                           agnostic=self.opt.agnostic_nms)
+                prediction = non_max_suppression(prediction, self.opt.conf_thres, self.opt.iou_thres,
+                                                classes=self.opt.classes, agnostic=self.opt.agnostic_nms)
                 inforObjects = ""
+                
                 # Process objects detection in image
-                for i, det in enumerate(prediction):  # detections per image
+                # detections per image
+                for i, det in enumerate(prediction):
                     if det is not None and len(det):
                         # This is for rescale boxes from img_size to im0 size
                         det[:, :4] = scale_coords(
                             image.shape[2:], det[:, :4], showImage.shape).round()
+                        
                         # Write results of objects to command line and file .txt
                         for *xyxy, conf, cls in reversed(det):
                             label = '%s %.2f' % (self.names[int(cls)], conf)
                             print("[INFO] :  ", label)
                             listOfName.append(self.names[int(cls)])
+                            
                             # Get single information of the object
                             inforObject = plot_one_box(
                                 xyxy, showImage, label=label, color=self.colors[int(cls)], line_thickness=2)
                             inforObjects = inforObjects + inforObject + "\n"
                             with open('result_Object.txt', 'w') as f:
-                                f.write(inforObjects + '\n')                
+                                f.write(inforObjects + '\n')     
             
             # Received results
             self.textBrowser.setText(inforObjects)
-            self.out.write(showImage)
+            self.output.write(showImage)
             show = cv2.resize(showImage, (640, 480))
             self.result = cv2.cvtColor(show, cv2.COLOR_BGR2RGB)
             showImage = QtGui.QImage(self.result.data, self.result.shape[1], self.result.shape[0],
@@ -260,20 +270,20 @@ class Ui_MainWindow(QMainWindow):
         else:
             self.resetApplication()
 
-    # This function to describe QT
+    # This function to describe what is QT
     def aboutQt(self):
         QMessageBox.about(self, "About Qt - Qt Designer",
             "Qt is a cross-platform framework written in C++ language, used to develop projects, software for desktop, or mobile."
             "PyQt is a library that allows you to use Qt GUI, a very famous framework of C++. PyQt has many versions but the most recent and most supported is PyQt5.\n")
     
-    # Describe author
+    # This function to describe author
     def aboutAuthor(self):
         QMessageBox.about(self, "About Author", "Instructor: Коцубинский В. П.\nExecutor: Tran Huu Thai\n\n"
                                                     "Contact me: \n"
                                                     "Number Phone - 89138032486\n"
                                                     "Email - Thaitran130399.tusur@gmail.com")
 
-    # Exit
+    # THis function to exit the program
     def questionExit(self):
         message = QMessageBox.question(self, "Exit", "Do you want to exit? Please sure that you saved all your data!", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if message == QMessageBox.Yes:
